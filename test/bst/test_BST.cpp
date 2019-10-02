@@ -59,3 +59,12 @@ TEST_F(SmallBSTFixture, SMALL_INSERT_DUPLICATES_TEST) {
 }
 
 // TODO: add more BST tests here
+TEST_F(SmallBSTFixture, SMALL_CORRECT_ORDER_TEST) {
+    // assert the small BST satisfies the property:
+    // left descendants < current node < right descendants
+    vector<int> inorderVec;
+    inorderVec = bst.inorder();
+    for (int i = inorderVec.size() - 1; i > 0; i--) {
+        EXPECT_LT(inorderVec[i], inorderVec[i - 1]);
+    }
+}
