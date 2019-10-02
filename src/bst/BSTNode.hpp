@@ -14,10 +14,30 @@ class BSTNode {
     Data const data;  // the const Data in this node.
 
     /** TODO */
-    BSTNode(const Data& d) : data(d) {}
+    BSTNode(const Data& d) : data(d), left(NULL), right(NULL), parent(NULL) {}
 
     /** TODO */
-    BSTNode<Data>* successor() { return 0; }
+    BSTNode<Data>* successor() {
+        BSTNode<Data>* ptr = this;
+        if (right != NULL) {
+            // find first left-branch descendant in the right descendants
+            ptr = ptr->right;
+            while (ptr->left != NULL) {
+                ptr = ptr->left;
+            }
+            return ptr;
+        } else {
+            // find first acestor with a left child
+            while (ptr->parent != NULL) {
+                if (ptr == ptr->parent->left) {
+                    ptr = ptr->parent;
+                    return ptr;
+                }
+                ptr = ptr->parent;
+            }
+        }
+        return 0;
+    }
 };
 
 /** DO NOT CHANGE THIS METHOD
