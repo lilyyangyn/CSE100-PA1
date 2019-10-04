@@ -31,19 +31,76 @@ class BST {
     virtual ~BST() { deleteAll(root); }
 
     /** TODO */
-    virtual bool insert(const Data& item) { return false; }
+    virtual bool insert(const Data& item) {
+        // if null tree, insert the node to the root
+        if (isize == 0) {
+            // BSTNode<Data> p(item);
+            this->root = new BSTNode<Data>(item);
+            isize++;
+            iheight++;
+            return true;
+        }
+        // travel down the tree
+        int level = 0;
+        BSTNode<Data>* ptr = root;
+        while (ptr != NULL) {
+            level++;
+            if (item < ptr->data) {
+                if (ptr->left != NULL) {
+                    ptr = ptr->left;
+                } else {
+                    break;
+                }
+            } else if (ptr->data < item) {
+                if (ptr->right != NULL) {
+                    ptr = ptr->right;
+                } else {
+                    break;
+                }
+            } else {
+                // duplicated data, insertion fails
+                return false;
+            }
+        }
+        // insert item
+        if (item < ptr->data) {
+            ptr->left = new BSTNode<Data>(item);
+            ptr->left->parent = ptr;
+        } else if (ptr->data < item) {
+            ptr->right = new BSTNode<Data>(item);
+            ptr->right->parent = ptr;
+        }
+        // update isize and iheight
+        isize++;
+        if (level > iheight) {
+            iheight++;
+        }
+        return true;
+    }
 
     /** TODO */
-    virtual iterator find(const Data& item) const { return 0; }
+    virtual iterator find(const Data& item) const {
+        BSTNode<Data>* ptr = root;
+        while (ptr != NULL) {
+            if (ptr->data < item) {
+                ptr = ptr->right;
+            } else if (item < ptr->data) {
+                ptr = ptr->left;
+            } else {
+                return BSTIterator<Data>(ptr);
+            }
+        }
+        return BSTIterator<Data>(NULL);
+    }
 
     /** TODO */
-    unsigned int size() const { return 0; }
+    unsigned int size() const { return isize; }
 
     /** TODO */
-    int height() const { return 0; }
+    int height() const { return iheight; }
 
     /** TODO */
-    bool empty() const { return false; }
+    bool empty() const { return isize == 0; }
 
     /** TODO */
     iterator begin() const { return BST::iterator(first(root)); }
@@ -53,11 +110,24 @@ class BST {
     iterator end() const { return typename BST<Data>::iterator(0); }
 
     /** TODO */
-    vector<Data> inorder() const {}
+    vector<Data> inorder() const {
+        vector<Data> nodes;
+        inorderTraversal(this->root, nodes);
+        return nodes;
+    }
 
   private:
     /** TODO */
-    static BSTNode<Data>* first(BSTNode<Data>* root) { return 0; }
+    static BSTNode<Data>* first(BSTNode<Data>* root) {
+        if (root == NULL) {
+            return 0;
+        }
+        BSTNode<Data>* ptr = root;
+        while (ptr->left != NULL) {
+            ptr = ptr->left;
+        }
+        return ptr;
+    }
 
     /** TODO */
     static void deleteAll(BSTNode<Data>* n) {
@@ -67,6 +137,21 @@ class BST {
            recursively delete right sub-tree
            delete current node
         */
+        if (n == NULL) {
+            return;
+        }
+        deleteAll(n->left);
+        deleteAll(n->right);
+        delete n;
+    }
+
+    static void inorderTraversal(BSTNode<Data>* n, vector<Data>& nodes) {
+        if (n == NULL) {
+            return;
+        }
+        inorderTraversal(n->left, nodes);
+        nodes.push_back(n->data);
+        inorderTraversal(n->right, nodes);
     }
 };
 
