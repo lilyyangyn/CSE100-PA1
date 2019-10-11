@@ -47,3 +47,67 @@ TEST_F(SmallKDTFixture, TEST_NEAREST_POINT) {
     Point* closestPoint = naiveSearch.findNearestNeighbor(queryPoint);
     ASSERT_EQ(*kdt.findNearestNeighbor(queryPoint), *closestPoint);
 }
+
+/* Empty KDT starts here */
+TEST(KDTTests, EMPTY_TREE_SIZE) {
+    KDT kdt;
+    EXPECT_EQ(kdt.size(), 0);
+}
+
+TEST(KDTTests, EMPTY_TREE_HEIGHT) {
+    KDT kdt;
+    EXPECT_EQ(kdt.height(), -1);
+}
+
+TEST(KDTTests, EMPTY_TREE_BUILD) {
+    KDT kdt;
+    vector<Point> points;
+    kdt.build(points);
+    EXPECT_EQ(kdt.height(), -1);
+    EXPECT_EQ(kdt.size(), 0);
+}
+
+TEST(KDTTests, EMPTY_TREE_FIND_NN) {
+    KDT kdt;
+    Point queryPoint;
+    // EXPECT_EQ(kdt.findNearestNeighbor(queryPoint), NULL);
+}
+
+TEST(KDTTests, EMPTY_TREE_RANGE_SEARCH) {
+    KDT kdt;
+    vector<pair<double, double>> queryRegion;
+    pair<double, double> x = pair<double, double>(INT_MIN, INT_MAX);
+    queryRegion.push_back(x);
+    vector<Point> result = kdt.rangeSearch(queryRegion);
+    EXPECT_TRUE(result.empty());
+}
+
+/* Small KDT starts here */
+/**
+ * the KDT looks like the below:
+ *               (3.2, 1.0)
+ *                /      \
+ *        (1.8, 1.9)    (4.4, 2.2)
+ *         /                    \
+ * (1.0, 3.2)                   (5.7, 3.2)
+ */
+TEST_F(SmallKDTFixture, TEST_HEIGHT) { EXPECT_EQ(kdt.height(), 2); }
+
+TEST_F(SmallKDTFixture, TEST_RANGE_SEARCH) {
+    vector<pair<double, double>> queryRegion;
+    vector<Point> result = kdt.rangeSearch(queryRegion);
+    EXPECT_TRUE(result.empty());
+
+    queryRegion.push_back(pair<double, double>(0, 5));
+    queryRegion.push_back(pair<double, double>(1.5, 4));
+    result = kdt.rangeSearch(queryRegion);
+    NaiveSearch naiveSearch;
+    naiveSearch.build(vec);
+    vector<Point> naiveResult = naiveSearch.rangeSearch(queryRegion);
+
+    ASSERT_EQ(result.size(), naiveResult.size());
+
+    sort(result.begin(), result.end(), CompareValueAt(0));
+    sort(naiveResult.begin(), result.end(), CompareValueAt(0));
+    EXPECT_EQ(result, naiveResult);
+}

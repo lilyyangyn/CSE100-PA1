@@ -60,7 +60,7 @@ class KDT {
         if (points.empty()) {
             root = 0;
             isize = 0;
-            iheight = 0;
+            iheight = -1;
             return;
         }
 
