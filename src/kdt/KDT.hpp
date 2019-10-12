@@ -205,9 +205,10 @@ class KDT {
             return;
         }
         if (contain) {
-            vector<Point> subtree = inorderSubtree(node);
-            pointsInRange.insert(pointsInRange.end(), subtree.begin(),
-                                 subtree.end());
+            vector<Point> nodes;
+            inorderHelper(node, nodes);
+            pointsInRange.insert(pointsInRange.end(), nodes.begin(),
+                                 nodes.end());
             return;
         }
 
@@ -252,10 +253,5 @@ class KDT {
         inorderHelper(curr->right, nodes);
     }
 
-    static vector<Point> inorderSubtree(KDNode* root) {
-        vector<Point> nodes;
-        inorderHelper(root, nodes);
-        return nodes;
-    }
 };
 #endif  // KDT_HPP

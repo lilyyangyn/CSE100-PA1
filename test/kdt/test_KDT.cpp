@@ -76,7 +76,7 @@ TEST(KDTTests, EMPTY_TREE_FIND_NN) {
 TEST(KDTTests, EMPTY_TREE_RANGE_SEARCH) {
     KDT kdt;
     vector<pair<double, double>> queryRegion;
-    pair<double, double> x = pair<double, double>(INT_MIN, INT_MAX);
+    pair<double, double> x = pair<double, double>(WINT_MIN, INT8_MAX);
     queryRegion.push_back(x);
     vector<Point> result = kdt.rangeSearch(queryRegion);
     EXPECT_TRUE(result.empty());
@@ -91,7 +91,10 @@ TEST(KDTTests, EMPTY_TREE_RANGE_SEARCH) {
  *         /            /
  * (1.8, 1.9)       (4.4, 2.2)
  */
-TEST_F(SmallKDTFixture, TEST_HEIGHT) { EXPECT_EQ(kdt.height(), 2); }
+TEST_F(SmallKDTFixture, TEST_HEIGHT) {
+    EXPECT_LE(kdt.height(), floor(log(kdt.size()) / log(2)));
+    EXPECT_EQ(kdt.height(), 2);
+}
 
 TEST_F(SmallKDTFixture, TEST_BUILD_ORDER) {
     vector<Point> inorder = kdt.inorder();
@@ -114,9 +117,37 @@ TEST_F(SmallKDTFixture, TEST_RANGE_SEARCH) {
     NaiveSearch naiveSearch;
     naiveSearch.build(vec);
     vector<Point> naiveResult = naiveSearch.rangeSearch(queryRegion);
-
     ASSERT_EQ(result.size(), naiveResult.size());
-
     sort(naiveResult.begin(), naiveResult.end(), CompareValueAt(0));
     EXPECT_EQ(result, naiveResult);
+
+    vector<pair<double, double>> queryRegion2;
+    queryRegion2.push_back(pair<double, double>(0, 5));
+    queryRegion2.push_back(pair<double, double>(0, 4));
+    result = kdt.rangeSearch(queryRegion2);
+    NaiveSearch naiveSearch2;
+    naiveSearch2.build(vec);
+    naiveResult = naiveSearch2.rangeSearch(queryRegion2);
+    ASSERT_EQ(result.size(), naiveResult.size());
+    sort(naiveResult.begin(), naiveResult.end(), CompareValueAt(0));
+    EXPECT_EQ(result, naiveResult);
+}
+
+TEST(KDTTests, DESTRUCTOR_TEST) {
+    KDT* treePtr = new KDT();
+    delete treePtr;
+
+    vector<Point> vec;
+    vec.emplace_back(Point({1.0, 3.2}));
+    vec.emplace_back(Point({3.2, 1.0}));
+    vec.emplace_back(Point({5.7, 3.2}));
+    vec.emplace_back(Point({1.8, 1.9}));
+    vec.emplace_back(Point({4.4, 2.2}));
+
+    treePtr = new KDT();
+    treePtr->build(vec);
+
+    delete treePtr;
+
+    EXPECT_TRUE(1);
 }
