@@ -87,11 +87,21 @@ TEST(KDTTests, EMPTY_TREE_RANGE_SEARCH) {
  * the KDT looks like the below:
  *               (3.2, 1.0)
  *                /      \
- *        (1.8, 1.9)    (4.4, 2.2)
- *         /                    \
- * (1.0, 3.2)                   (5.7, 3.2)
+ *        (1.0, 3.2)    (5.7, 3.2)
+ *         /            /
+ * (1.8, 1.9)       (4.4, 2.2)
  */
 TEST_F(SmallKDTFixture, TEST_HEIGHT) { EXPECT_EQ(kdt.height(), 2); }
+
+TEST_F(SmallKDTFixture, TEST_BUILD_ORDER) {
+    vector<Point> inorder = kdt.inorder();
+    ASSERT_EQ(inorder.size(), 5);
+    EXPECT_EQ(inorder[0], Point({1.8, 1.9}));
+    EXPECT_EQ(inorder[1], Point({1.0, 3.2}));
+    EXPECT_EQ(inorder[2], Point({3.2, 1.0}));
+    EXPECT_EQ(inorder[3], Point({4.4, 2.2}));
+    EXPECT_EQ(inorder[4], Point({5.7, 3.2}));
+}
 
 TEST_F(SmallKDTFixture, TEST_RANGE_SEARCH) {
     vector<pair<double, double>> queryRegion;
@@ -107,7 +117,6 @@ TEST_F(SmallKDTFixture, TEST_RANGE_SEARCH) {
 
     ASSERT_EQ(result.size(), naiveResult.size());
 
-    sort(result.begin(), result.end(), CompareValueAt(0));
-    sort(naiveResult.begin(), result.end(), CompareValueAt(0));
+    sort(naiveResult.begin(), naiveResult.end(), CompareValueAt(0));
     EXPECT_EQ(result, naiveResult);
 }

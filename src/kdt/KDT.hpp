@@ -65,6 +65,12 @@ class KDT {
         }
 
         numDim = points[0].numDim;
+        for (int i = 0; i < numDim; i++) {
+            sort(points.begin(), points.end(), CompareValueAt(i));
+            boundingBox.push_back(pair<double, double>(
+                points[0].valueAt(i), points[points.size() - 1].valueAt(i)));
+        }
+
         iheight = -1;
         root = buildSubtree(points, 0, points.size(), 0, -1);
         isize = points.size();
@@ -101,7 +107,15 @@ class KDT {
 
     /** Extra credit */
     vector<Point> rangeSearch(vector<pair<double, double>>& queryRegion) {
-        return {};
+        while (pointsInRange.size() > 0) {
+            pointsInRange.pop_back();
+        }
+        if (queryRegion.empty()) {
+            return pointsInRange;
+        }
+        rangeSearchHelper(root, boundingBox, queryRegion, 0);
+        sort(pointsInRange.begin(), pointsInRange.end(), CompareValueAt(0));
+        return pointsInRange;
     }
 
     /** TODO */
@@ -109,6 +123,12 @@ class KDT {
 
     /** TODO */
     int height() const { return iheight; }
+
+    vector<Point> inorder() {
+        vector<Point> nodes;
+        inorderHelper(root, nodes);
+        return nodes;
+    }
 
   private:
     /** TODO */
@@ -120,7 +140,8 @@ class KDT {
 
         iheight = (iheight < height + 1) ? height + 1 : iheight;
 
-        sort(points.begin(), points.end(), CompareValueAt(curDim));
+        sort(points.begin(), points.begin() + end - start,
+             CompareValueAt(curDim));
         unsigned int median = floor((start + end) / 2);
         unsigned int nextDim = (curDim + 1) % numDim;
 
@@ -163,7 +184,53 @@ class KDT {
     /** Extra credit */
     void rangeSearchHelper(KDNode* node, vector<pair<double, double>>& curBB,
                            vector<pair<double, double>>& queryRegion,
-                           unsigned int curDim) {}
+                           unsigned int curDim) {
+        vector<pair<double, double>> originBB = curBB;
+        if (node == nullptr) {
+            return;
+        }
+
+        bool contain = true, overlap = true;
+        for (int i = 0; i < queryRegion.size(); i++) {
+            if (curBB[i].first < queryRegion[i].first ||
+                curBB[i].second > queryRegion[i].second) {
+                contain = false;
+            } else if (curBB[i].second < queryRegion[i].first ||
+                       curBB[i].first > queryRegion[i].second) {
+                overlap = false;
+                break;
+            }
+        }
+        if (!overlap) {
+            return;
+        }
+        if (contain) {
+            vector<Point> subtree = inorderSubtree(node);
+            pointsInRange.insert(pointsInRange.end(), subtree.begin(),
+                                 subtree.end());
+            return;
+        }
+
+        unsigned int nextDim = (curDim + 1) % numDim;
+        curBB[curDim].second = node->point.valueAt(curDim);
+        rangeSearchHelper(node->left, curBB, queryRegion, nextDim);
+        curBB = originBB;
+        curBB[curDim].first = node->point.valueAt(curDim);
+
+        rangeSearchHelper(node->right, curBB, queryRegion, nextDim);
+        curBB = originBB;
+
+        contain = true;
+        for (int i = 0; i < queryRegion.size(); i++) {
+            if (node->point.valueAt(i) < queryRegion[i].first ||
+                node->point.valueAt(i) > queryRegion[i].second) {
+                contain = false;
+            }
+        }
+        if (contain) {
+            pointsInRange.push_back(node->point);
+        }
+    }
 
     /** TODO */
     static void deleteAll(KDNode* n) {
@@ -176,5 +243,19 @@ class KDT {
     }
 
     // Add your own helper methods here
+    static void inorderHelper(KDNode* curr, vector<Point>& nodes) {
+        if (curr == nullptr) {
+            return;
+        }
+        inorderHelper(curr->left, nodes);
+        nodes.push_back(curr->point);
+        inorderHelper(curr->right, nodes);
+    }
+
+    static vector<Point> inorderSubtree(KDNode* root) {
+        vector<Point> nodes;
+        inorderHelper(root, nodes);
+        return nodes;
+    }
 };
 #endif  // KDT_HPP
