@@ -82,23 +82,7 @@ class KDT {
             return nullptr;
         }
 
-        KDNode* curr = root;
-        KDNode* prev;
-        unsigned dim = 0;
-
-        while (curr != nullptr) {
-            prev = curr;
-            if (queryPoint.valueAt(dim) < curr->point.valueAt(dim)) {
-                curr = curr->left;
-            } else {
-                curr = curr->right;
-            }
-            dim = (dim + 1) % numDim;
-        }
-
-        prev->point.setDistToQuery(queryPoint);
-        nearestNeighbor = prev->point;
-        threshold = prev->point.distToQuery;
+        threshold = INT8_MAX;
 
         findNNHelper(root, queryPoint, 0);
 
@@ -114,7 +98,6 @@ class KDT {
             return pointsInRange;
         }
         rangeSearchHelper(root, boundingBox, queryRegion, 0);
-        sort(pointsInRange.begin(), pointsInRange.end(), CompareValueAt(0));
         return pointsInRange;
     }
 
@@ -215,11 +198,6 @@ class KDT {
         unsigned int nextDim = (curDim + 1) % numDim;
         curBB[curDim].second = node->point.valueAt(curDim);
         rangeSearchHelper(node->left, curBB, queryRegion, nextDim);
-        curBB = originBB;
-        curBB[curDim].first = node->point.valueAt(curDim);
-
-        rangeSearchHelper(node->right, curBB, queryRegion, nextDim);
-        curBB = originBB;
 
         contain = true;
         for (int i = 0; i < queryRegion.size(); i++) {
@@ -231,6 +209,11 @@ class KDT {
         if (contain) {
             pointsInRange.push_back(node->point);
         }
+
+        curBB = originBB;
+        curBB[curDim].first = node->point.valueAt(curDim);
+        rangeSearchHelper(node->right, curBB, queryRegion, nextDim);
+        curBB = originBB;
     }
 
     /** TODO */
@@ -252,6 +235,5 @@ class KDT {
         nodes.push_back(curr->point);
         inorderHelper(curr->right, nodes);
     }
-
 };
 #endif  // KDT_HPP

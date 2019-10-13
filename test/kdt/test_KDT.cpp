@@ -118,6 +118,7 @@ TEST_F(SmallKDTFixture, TEST_RANGE_SEARCH) {
     naiveSearch.build(vec);
     vector<Point> naiveResult = naiveSearch.rangeSearch(queryRegion);
     ASSERT_EQ(result.size(), naiveResult.size());
+    sort(result.begin(), result.end(), CompareValueAt(0));
     sort(naiveResult.begin(), naiveResult.end(), CompareValueAt(0));
     EXPECT_EQ(result, naiveResult);
 
@@ -129,6 +130,7 @@ TEST_F(SmallKDTFixture, TEST_RANGE_SEARCH) {
     naiveSearch2.build(vec);
     naiveResult = naiveSearch2.rangeSearch(queryRegion2);
     ASSERT_EQ(result.size(), naiveResult.size());
+    sort(result.begin(), result.end(), CompareValueAt(0));
     sort(naiveResult.begin(), naiveResult.end(), CompareValueAt(0));
     EXPECT_EQ(result, naiveResult);
 }
