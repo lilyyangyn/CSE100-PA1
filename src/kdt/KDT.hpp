@@ -82,7 +82,20 @@ class KDT {
             return nullptr;
         }
 
-        threshold = INT8_MAX;
+        // threshold = INT8_MAX;
+        KDNode *prev = root, *cur = root;
+        unsigned dim = 0;
+        while (cur != nullptr) {
+            prev = cur;
+            dim = (dim + 1) % numDim;
+            cur = (queryPoint.valueAt(dim) < cur->point.valueAt(dim))
+                      ? cur->left
+                      : cur->right;
+            dim = (dim + 1) % numDim;
+        }
+        prev->point.setDistToQuery(queryPoint);
+        nearestNeighbor = prev->point;
+        threshold = prev->point.distToQuery;
 
         findNNHelper(root, queryPoint, 0);
 
@@ -123,7 +136,7 @@ class KDT {
 
         iheight = (iheight < height + 1) ? height + 1 : iheight;
 
-        sort(points.begin(), points.begin() + end - start,
+        sort(points.begin() + start, points.begin() + end,
              CompareValueAt(curDim));
         unsigned int median = floor((start + end) / 2);
         unsigned int nextDim = (curDim + 1) % numDim;
@@ -146,13 +159,13 @@ class KDT {
         if (queryPoint.valueAt(curDim) < node->point.valueAt(curDim)) {
             findNNHelper(node->left, queryPoint, nextDim);
             if (pow(node->point.valueAt(curDim) - queryPoint.valueAt(curDim),
-                    2.0) <= threshold) {
+                    2.0) < threshold) {
                 findNNHelper(node->right, queryPoint, nextDim);
             }
         } else {
             findNNHelper(node->right, queryPoint, nextDim);
             if (pow(queryPoint.valueAt(curDim) - node->point.valueAt(curDim),
-                    2.0) <= threshold) {
+                    2.0) < threshold) {
                 findNNHelper(node->left, queryPoint, nextDim);
             }
         }
